@@ -9,6 +9,10 @@ on:
       upload-tag:
         type: string
         default: "nightly"
+      variant:
+        description: "agent (full) or customer (incoming-only, numeric password)"
+        type: string
+        default: "agent"
 
 # NOTE: F-Droid builder script 'flutter/build_fdroid.sh' reads environment
 # variables from this workflow!
@@ -101,6 +105,13 @@ jobs:
           sed -i 's#RwLock::new("RustDesk".to_owned())#RwLock::new("NEWFM Remote".to_owned())#' "$F"
           echo '--- patched RENDEZVOUS_SERVERS / RS_PUB_KEY / APP_NAME ---'
           grep -n 'RENDEZVOUS_SERVERS\|RS_PUB_KEY\|APP_NAME' "$F"
+          if [ "${{ inputs.variant }}" = "customer" ]; then
+            echo '--- customer variant: force incoming-only + numeric one-time password ---'
+            sed -i '/pub fn is_incoming_only() -> bool {/,/^}/c\pub fn is_incoming_only() -> bool { true }' "$F"
+            sed -i 's#Config::get_auto_password(len)#Config::get_auto_numeric_password(len)#' libs/hbb_common/src/password_security.rs
+            grep -n 'fn is_incoming_only' "$F"
+            grep -n 'get_auto_numeric_password\|get_auto_password(len)' libs/hbb_common/src/password_security.rs
+          fi
 
       - name: Restore bridge files
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
