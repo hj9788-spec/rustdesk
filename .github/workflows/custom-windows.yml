@@ -103,8 +103,9 @@ jobs:
           sed -i 's#"rs-ny.rustdesk.com"#"124.198.77.202"#' "$F"
           sed -i 's#OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=#9QzqyEuMklgYVGK352qyn+nn1Lo2aYMRoN7eawNKUmU=#' "$F"
           sed -i 's#RwLock::new("RustDesk".to_owned())#RwLock::new("NEWFM Remote".to_owned())#' "$F"
-          echo '--- patched RENDEZVOUS_SERVERS / RS_PUB_KEY / APP_NAME ---'
-          grep -n 'RENDEZVOUS_SERVERS\|RS_PUB_KEY\|APP_NAME' "$F"
+          sed -i '/pub fn is_disable_installation() -> bool {/,/^}/c\pub fn is_disable_installation() -> bool { true }' "$F"
+          echo '--- patched RENDEZVOUS_SERVERS / RS_PUB_KEY / APP_NAME / disable-installation ---'
+          grep -n 'RENDEZVOUS_SERVERS\|RS_PUB_KEY\|APP_NAME\|is_disable_installation' "$F"
           if [ "${{ inputs.variant }}" = "customer" ]; then
             echo '--- customer variant: force incoming-only + numeric one-time password ---'
             sed -i '/pub fn is_incoming_only() -> bool {/,/^}/c\pub fn is_incoming_only() -> bool { true }' "$F"
